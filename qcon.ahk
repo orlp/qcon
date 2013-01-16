@@ -7,6 +7,18 @@ SetWinDelay 0
 CoordMode Mouse
 
 
+loop 
+{	
+	; get the current window's handle
+	WinGet, ActiveId, ID, A
+	
+	if (ActiveId != ConsoleId)
+	{
+        WinWaitNotActive, ahk_id %ActiveId%
+        LastActiveId := ActiveId
+    }
+}
+
 #`::
 DetectHiddenWindows, on
 IfWinExist quake_style_console
