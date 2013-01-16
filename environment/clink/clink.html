@@ -646,7 +646,7 @@ asciidoc.install(2);
 <h1>Clink</h1>
 <span id="author">Martin Ridgers</span><br />
 <span id="email"><code>&lt;<a href="mailto:martin.ridgers+clink@gmail.com">martin.ridgers+clink@gmail.com</a>&gt;</code></span><br />
-<span id="revdate">v0.2.1</span>
+<span id="revdate">vDEV</span>
 <div id="toc">
   <div id="toctitle">Table of Contents</div>
   <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
@@ -768,6 +768,49 @@ c:\users\&lt;username&gt;\appdata\local (Vista onwards)
 </p>
 </li>
 </ul></div>
+<div class="sect2">
+<h3 id="_settings">Settings</h3>
+<div class="paragraph"><p>It is also possible to configure settings specific to Clink. These are stored
+in a file called <em>settings</em> which is found in the non-roaming profile folder
+mentioned in the previous section. The settings file gets created the first
+time Clink is run.</p></div>
+<div class="paragraph"><p>The following table describes the available settings;</p></div>
+<div class="tableblock">
+<table rules="all"
+width="100%"
+frame="border"
+cellspacing="0" cellpadding="4">
+<col width="50%" />
+<col width="50%" />
+<tbody>
+<tr>
+<td align="left" valign="top"><p class="table">ctrld_exits</p></td>
+<td align="left" valign="top"><p class="table">Ctrl-D exits the process when it is pressed on an empty line.</p></td>
+</tr>
+<tr>
+<td align="left" valign="top"><p class="table">esc_clears_line</p></td>
+<td align="left" valign="top"><p class="table">Clink clears the current line when Esc is pressed (unless Readline&#8217;s Vi mode is enabled).</p></td>
+</tr>
+<tr>
+<td align="left" valign="top"><p class="table">exec_match_style</p></td>
+<td align="left" valign="top"><p class="table">Changes how Clink will match executables when there is no path separator on the line. 0 = PATH only, 1 = PATH and CWD, 2 = PATH, CWD, and directories. In all cases both executables and directories are matched when there is a path separator present.</p></td>
+</tr>
+<tr>
+<td align="left" valign="top"><p class="table">match_colour</p></td>
+<td align="left" valign="top"><p class="table">Colour to use when displaying matches. A value less than 0 will be the opposite brightness of the default colour.</p></td>
+</tr>
+<tr>
+<td align="left" valign="top"><p class="table">passthrough_ctrlc</p></td>
+<td align="left" valign="top"><p class="table">When Ctrl-C is pressed Clink will pass it thourgh to the parent.</p></td>
+</tr>
+<tr>
+<td align="left" valign="top"><p class="table">prompt_colour</p></td>
+<td align="left" valign="top"><p class="table">Surrounds the prompt in ANSI escape codes to set the prompt&#8217;s colour. Disabled when the value is less than 0.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -907,6 +950,41 @@ this node can be considered for match generation. This is useful in situations
 where mixing arguments and Readline&#8217;s file name match generation is desirable.</p></div>
 </div>
 <div class="sect2">
+<h3 id="_filtering_the_match_display">Filtering The Match Display</h3>
+<div class="paragraph"><p>In some instances it may be preferable to display potential matches in an
+alternative form than the generated matches passed to and used internally by
+Readline. This happens for example with Readline&#8217;s standard file name matches,
+where the matches are the whole word being completed but only the last part of
+the path is shown (e.g. the match <em>foo/bar</em> is displayed as <em>bar</em>).</p></div>
+<div class="paragraph"><p>To facilitate custom match generators that may wish to do this there is the
+<em>clink.match_display_filter</em> variable. This can be set to a function that will
+then be called before matches are to be displayed.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>function my_display_filter(matches)
+    new_matches = {}
+
+    for _, m in ipairs(matches) do
+        local _, _, n = m:find("\\([^\\]+)$")
+        table.insert(new_matches, n)
+    end
+
+    return new_matches
+end
+
+function my_match_generator(text, first, last)
+    ...
+
+    clink.match_display_filter = my_display_filter
+    return true
+end</code></pre>
+</div></div>
+<div class="paragraph"><p>The function&#8217;s single argument <em>matches</em> is a table containing what Clink is
+going to display. The return value is a table with the input matches filtered
+as required by the match generator. The value of <em>clink.match_display_filter</em>
+is reset every time match generation is invoked.</p></div>
+</div>
+<div class="sect2">
 <h3 id="_customising_the_prompt">Customising The Prompt</h3>
 <div class="paragraph"><p>Before Clink displays the prompt it filters the prompt through Lua so that the
 prompt can be customised. This happens each and every time that the prompt is
@@ -976,6 +1054,12 @@ duplicates of each other.</p></div>
 <div class="paragraph indented"><p>Returns the number of matches output by calls to clink.add_match().</p></div>
 </div>
 <div class="sect3">
+<h4 id="_clink_match_display_filter">clink.match_display_filter</h4>
+<div class="paragraph indented"><p>This variable can be set to a function so that matches can be filtered before
+they are displayed. See <a href="#_filtering_the_match_display">display filtering</a>
+section for more info.</p></div>
+</div>
+<div class="sect3">
 <h4 id="_clink_matches_are_files">clink.matches_are_files()</h4>
 <div class="paragraph indented"><p>Tells Readline that the matches we are passing back to it are files. This will
 cause Readline to append the path separator character to the line if there&#8217;s
@@ -1010,6 +1094,10 @@ helps to construct such a tree node. It returns a tree node with the sub-tree
 <em>content</em> and with the branch properties specified by <em>flags</em>. See
 <a href="#_argument_completion">Argument Completion</a> for details of how to use the
 <em>flags</em> argument.</p></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_arg_node_merge_a_b">clink.arg.node_merge(a, b)</h4>
+<div class="paragraph indented"><p>Merges <em>a</em> and <em>b</em> into a new table and returns it.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clink_arg_node_transpose_a_b">clink.arg.node_transpose(a, b)</h4>
@@ -1047,14 +1135,24 @@ this variable.</p></div>
 <div class="sect2">
 <h3 id="_miscelaneous">Miscelaneous</h3>
 <div class="sect3">
-<h4 id="_clink_find_dirs_mask">clink.find_dirs(mask)</h4>
-<div class="paragraph indented"><p>Returns a table (array) of directories that match the supplied <em>mask</em>. There is
-no support for recursively traversing the path in <em>mask</em>.</p></div>
+<h4 id="_clink_chdir_path">clink.chdir(path)</h4>
+<div class="paragraph indented"><p>Changes the current working directory to <em>path</em>. Clink caches and restores the
+working directory between calls to the match generation so that it does not
+interfere with the processes normal operation.</p></div>
 </div>
 <div class="sect3">
-<h4 id="_clink_find_files_mask">clink.find_files(mask)</h4>
-<div class="paragraph indented"><p>Returns a table (array) of files that match the supplied <em>mask</em>. There is no
-support for recursively traversing the path in <em>mask</em>.</p></div>
+<h4 id="_clink_find_dirs_mask_case_map">clink.find_dirs(mask, case_map)</h4>
+<div class="paragraph indented"><p>Returns a table (array) of directories that match the supplied <em>mask</em>. If
+<em>case_map</em> is <em>true</em> then Clink will adjust the last part of the mask&#8217;s path so
+that returned matches respect Readline&#8217;s case-mapping feature (if it is
+enabled). For example; <em>.\foo_foo\bar_bar*</em> becomes <em>.\foo_foo\bar?bar*</em>.</p></div>
+<div class="paragraph"><p>There is no support for recursively traversing the path in <em>mask</em>.</p></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_find_files_mask_case_map">clink.find_files(mask, case_map)</h4>
+<div class="paragraph indented"><p>Returns a table (array) of files that match the supplied <em>mask</em>. See
+<em>find_dirs</em> for details on the <em>case_map</em> argument.</p></div>
+<div class="paragraph"><p>There is no support for recursively traversing the path in <em>mask</em>.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clink_get_env_env_var_name">clink.get_env(env_var_name)</h4>
@@ -1066,6 +1164,32 @@ results.</p></div>
 <div class="sect3">
 <h4 id="_clink_get_env_var_names">clink.get_env_var_names()</h4>
 <div class="paragraph indented"><p>Returns a table of the names of the current process' environment variables.</p></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_get_screen_info">clink.get_screen_info()</h4>
+<div class="paragraph indented"><p>Returns a table describing the current console buffer&#8217;s state with the following
+contents;</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>{
+    -- Dimensions of the console's buffer.
+    buffer_width
+    buffer_height
+
+    -- Dimensions of the visible area of the console buffer.
+    window_width
+    window_height
+}</code></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_get_setting_str_name">clink.get_setting_str(name)</h4>
+<div class="paragraph"><p>[role="indented"] Retrieves the Clink setting <em>name</em>, returning it as a string.
+See <a href="#_settings">Settings</a> for more information on the available settings.</p></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_get_setting_int_name">clink.get_setting_int(name)</h4>
+<div class="paragraph indented"><p>As <em>clink.get_setting_str</em> but returning a number instead.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clink_is_dir_path">clink.is_dir(path)</h4>
@@ -1085,6 +1209,18 @@ consider <em>-</em> and <em>_</em> as case insensitive.</p></div>
 <div class="paragraph indented"><p>Care should be taken when using this to generate masks for file/dir find
 operations due to the -/_ giving different results (unless of course Readline&#8217;s
 extended case-mapping is disabled).</p></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_quote_split_str_ql_qr">clink.quote_split(str, ql, qr)</h4>
+<div class="paragraph indented"><p>This function takes the string <em>str</em> which is quoted by <em>ql</em> (the opening quote
+character) and <em>qr</em> (the closing character) and splits it into parts as per the
+quotes. A table of these parts is returned.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>clink.quote_split("pre(middle)post", "(", ")") = {
+    "pre", "middle", "post"
+}</code></pre>
+</div></div>
 </div>
 <div class="sect3">
 <h4 id="_clink_slash_translation_type">clink.slash_translation(type)</h4>
@@ -1107,6 +1243,11 @@ path being completed. Values for <em>type</em> are;</p></div>
 </p>
 </li>
 </ul></div>
+</div>
+<div class="sect3">
+<h4 id="_clink_split_str_sep">clink.split(str, sep)</h4>
+<div class="paragraph indented"><p>Splits the string <em>str</em> into pieces separated by <em>sep</em>, returning a table of the
+pieces.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clink_suppress_char_append">clink.suppress_char_append()</h4>
@@ -1280,7 +1421,7 @@ Initial release.
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2012-10-26 00:08:47 W. Europe Daylight Time
+Last updated 2013-01-16 08:18:26 W. Europe Standard Time
 </div>
 </div>
 </body>

@@ -1,0 +1,40 @@
+do_inject():175 -- System: ver=6.1 1.0 arch=0 cpus=2 cpu_type=586 page_size=4096
+do_inject():180 -- Version: 0.0.0
+do_inject():181 -- DLL: C:\qcon\ENVIRO~1\clink\clink_dll_x86.dll
+do_inject():183 -- Parent pid: 5264
+check_dll_version():49 -- DLL version: 00000000 00000a47
+do_inject():253 -- Creating remote thread at 75B249BF with parameter 002B0000
+validate_parent_process():338 -- Found base address for executable at 4AB00000.
+hook_trap():178 -- VEH hit - caller is 4AB02C81.
+hook_iat():77 -- Attempting to hook IAT for module 4AB00000
+hook_iat():78 -- Target is (null),WriteConsoleW (by_name=1)
+iterate_imports():94 -- Checking imports in 'msvcrt.dll'
+iterate_imports():94 -- Checking imports in 'ntdll.dll'
+iterate_imports():94 -- Checking imports in 'KERNEL32.dll'
+hook_iat():104 -- Found import at 4AB012B8 (value = 002A2EC0)
+hook_iat():77 -- Attempting to hook IAT for module 667B0000
+hook_iat():78 -- Target is (null),WriteConsoleW (by_name=1)
+iterate_imports():94 -- Checking imports in 'dbghelp.dll'
+iterate_imports():94 -- Checking imports in 'KERNEL32.dll'
+hook_iat():104 -- Found import at 667DC01C (value = 75B47AB2)
+hook_jmp():364 -- Attemping jump hook.
+hook_jmp():365 -- Target is kernel32.dll, ReadConsoleW @ 75BC73B2
+hook_jmp_impl():277 -- Attempting to hook at 75BC73B2 with 667B1227
+hook_jmp_impl():314 -- Matched prolog 8B55FF8B (mask = 0000FFFF)
+hook_jmp():375 -- Success!
+hook_iat():77 -- Attempting to hook IAT for module 667B0000
+hook_iat():78 -- Target is (null),ReadConsoleW (by_name=1)
+iterate_imports():94 -- Checking imports in 'dbghelp.dll'
+iterate_imports():94 -- Checking imports in 'KERNEL32.dll'
+hook_iat():104 -- Found import at 667DC038 (value = 75BC73B2)
+hook_jmp():364 -- Attemping jump hook.
+hook_jmp():365 -- Target is kernel32.dll, ReadConsoleInputA @ 75BC6F6B
+hook_jmp_impl():277 -- Attempting to hook at 75BC6F6B with 667B1202
+hook_jmp_impl():314 -- Matched prolog 8B55FF8B (mask = 0000FFFF)
+hook_jmp():375 -- Success!
+hook_iat():77 -- Attempting to hook IAT for module 667B0000
+hook_iat():78 -- Target is (null),ReadConsoleInputA (by_name=1)
+iterate_imports():94 -- Checking imports in 'dbghelp.dll'
+iterate_imports():94 -- Checking imports in 'KERNEL32.dll'
+hook_iat():104 -- Found import at 667DC020 (value = 75BC6F6B)
+hook_trap():183 -- Success!

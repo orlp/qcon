@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <settings>
-	<console change_refresh="10" refresh="100" rows="13" columns="96" buffer_rows="5000" buffer_columns="0" shell="" init_dir="" start_hidden="0" save_size="1">
+	<console change_refresh="10" refresh="100" rows="28" columns="95" buffer_rows="5000" buffer_columns="0" shell="" init_dir="" start_hidden="0" save_size="1">
 		<colors>
 			<color id="0" r="0" g="0" b="0"/>
 			<color id="1" r="0" g="0" b="128"/>
@@ -29,13 +29,13 @@
 		<styles caption="0" resizable="0" taskbar_button="0" border="0" inside_border="9" tray_icon="0">
 			<selection_color r="255" g="255" b="255"/>
 		</styles>
-		<position x="209" y="274" dock="-1" snap="0" z_order="1" save_position="1"/>
+		<position x="354" y="90" dock="-1" snap="0" z_order="1" save_position="1"/>
 		<transparency type="1" active_alpha="215" inactive_alpha="215" r="0" g="0" b="0"/>
 	</appearance>
 	<behavior>
 		<copy_paste copy_on_select="1" clear_on_copy="1" no_wrap="1" trim_spaces="1" copy_newline_char="0" sensitive_copy="1"/>
 		<scroll page_scroll_rows="0"/>
-		<tab_highlight flashes="3" stay_highligted="1"/>
+		<tab_highlight flashes="0" stay_highligted="1"/>
 	</behavior>
 	<hotkeys use_scroll_lock="1">
 		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="83" command="settings"/>
@@ -49,7 +49,7 @@
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="newtab6"/>
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="newtab7"/>
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="newtab8"/>
-		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="120" command="newtab9"/>
+		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="newtab9"/>
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="newtab10"/>
 		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="49" command="switchtab1"/>
 		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="50" command="switchtab2"/>
@@ -63,14 +63,14 @@
 		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="48" command="switchtab10"/>
 		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="9" command="nexttab"/>
 		<hotkey ctrl="1" shift="1" alt="0" extended="0" code="9" command="prevtab"/>
-		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="87" command="closetab"/>
-		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="82" command="renametab"/>
+		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="closetab"/>
+		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="renametab"/>
 		<hotkey ctrl="1" shift="0" alt="0" extended="1" code="45" command="copy"/>
 		<hotkey ctrl="1" shift="0" alt="0" extended="1" code="46" command="clear_selection"/>
 		<hotkey ctrl="1" shift="1" alt="0" extended="0" code="86" command="paste"/>
 		<hotkey ctrl="1" shift="0" alt="0" extended="0" code="32" command="stopscroll"/>
-		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="scrollrowup"/>
-		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="scrollrowdown"/>
+		<hotkey ctrl="1" shift="0" alt="0" extended="1" code="38" command="scrollrowup"/>
+		<hotkey ctrl="1" shift="0" alt="0" extended="1" code="40" command="scrollrowdown"/>
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="scrollpageup"/>
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="scrollpagedown"/>
 		<hotkey ctrl="0" shift="0" alt="0" extended="0" code="0" command="scrollcolleft"/>
@@ -82,7 +82,7 @@
 	</hotkeys>
 	<mouse>
 		<actions>
-			<action ctrl="0" shift="0" alt="0" button="1" name="copy"/>
+			<action ctrl="0" shift="0" alt="0" button="0" name="copy"/>
 			<action ctrl="0" shift="1" alt="0" button="1" name="select"/>
 			<action ctrl="0" shift="0" alt="0" button="3" name="paste"/>
 			<action ctrl="0" shift="0" alt="1" button="1" name="drag"/>

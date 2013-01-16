@@ -33,26 +33,53 @@ clink.prompt.filters = {}
 
 --------------------------------------------------------------------------------
 function clink.compute_lcd(text, list)
-    if #list < 2 then
+    local list_n = #list
+    if list_n < 2 then
         return
     end
 
-    local early_out = #text
-    local lcd = list[1]
-    for i = 2, #list, 1 do
-        for j = 1, #lcd, 1 do
-            if lcd:sub(1, j):lower() ~= list[i]:sub(1, j):lower() then
-                lcd = lcd:sub(1, j - 1)
+    -- Find min and max limits
+    local max = 100000
+    for i = 1, #list, 1 do
+        local j = #(list[i])
+        if max > j then
+            max = j
+        end
+    end
+
+    -- For each character in the search range...
+    local mid = #text
+    local lcd = ""
+    for i = 1, max, 1 do
+        local same = true
+        local l = list[1]:sub(i, i)
+        local m = l:lower()
+
+        -- Compare character at the index with each other character in the
+        -- other matches.
+        for j = 2, list_n, 1 do
+            local n = list[j]:sub(i, i):lower()
+            if m ~= n then
+                same = false
                 break
             end
         end
 
-        if #lcd <= early_out then
-            break
+        -- If all characters match then use first match's character.
+        if same then
+            lcd = lcd..l 
+        else
+            -- Otherwise use what the user's typed or if we're past that then
+            -- bail out.
+            if i <= mid then
+                lcd = lcd..text:sub(i, i)
+            else
+                break
+            end
         end
     end
 
-    return text..lcd:sub(early_out + 1)
+    return lcd
 end
 
 --------------------------------------------------------------------------------
@@ -74,6 +101,8 @@ end
 --------------------------------------------------------------------------------
 function clink.generate_matches(text, first, last)
     clink.matches = {}
+    clink.match_display_filter = nil
+
     for _, generator in ipairs(clink.generators) do
         if generator.f(text, first, last) == true then
             if #clink.matches > 1 then
@@ -135,6 +164,59 @@ function clink.get_match(i)
 end
 
 --------------------------------------------------------------------------------
+function clink.split(str, sep)
+    local i = 1
+    local ret = {}
+    for _, j in function() return str:find(sep, i, true) end do
+        table.insert(ret, str:sub(i, j - 1))
+        i = j + 1
+    end
+    table.insert(ret, str:sub(i, j))
+
+    return ret
+end
+
+--------------------------------------------------------------------------------
+function clink.quote_split(str, ql, qr)
+    if not qr then
+        qr = ql
+    end
+
+    -- First parse in "pre[ql]quote_string[qr]" chunks
+    local insert = table.insert
+    local i = 1
+    local needle = "%b"..ql..qr
+    local parts = {}
+    for l, r, quote in function() return str:find(needle, i) end do
+        -- "pre"
+        if l > 1 then
+            insert(parts, str:sub(i, l - 1))
+        end
+
+        -- "quote_string"
+        insert(parts, str:sub(l + 1, r - 1))
+        i = r + 1
+    end
+
+    -- Second parse what remains as "pre[ql]being_quoted"
+    local l = str:find(ql, i, true)
+    if l then
+        -- "pre"
+        if l > 1 then
+            insert(parts, str:sub(i, l - 1))
+        end
+
+        -- "being_quoted"
+        insert(parts, str:sub(l + 1))
+    elseif i < #str then
+        -- Finally add whatever remains...
+        insert(parts, str:sub(i))
+    end
+
+    return parts
+end
+
+--------------------------------------------------------------------------------
 function clink.arg.register_tree(cmd, generator)
     clink.arg.generators[cmd:lower()] = generator
 end
@@ -161,6 +243,27 @@ function clink.arg.node_transpose(a, b)
 end
 
 --------------------------------------------------------------------------------
+function clink.arg.node_merge(a, b)
+    c = {}
+    d = {a, b}
+    for _, i in ipairs(d) do
+        if type(i) ~= "table" then
+            i = {i}
+        end
+
+        for j, k in pairs(i) do
+            if type(j) == "number" then
+                table.insert(c, k)
+            else
+                c[j] = k
+            end
+        end
+    end
+
+    return c
+end
+
+--------------------------------------------------------------------------------
 function clink.prompt.register_filter(filter, priority)
     if priority == nil then
         priority = 999
@@ -172,16 +275,60 @@ end
 
 --------------------------------------------------------------------------------
 function clink.filter_prompt(prompt)
+    local function add_ansi_codes(p)
+        local c = tonumber(clink.get_setting_int("prompt_colour"))
+        if c < 0 then
+            return p
+        end
+
+        c = c % 16
+
+        --[[
+            <4              >=4             %2
+            0 0  0 Black    4 1 -3 Blue     0
+            1 4  3 Red      5 5  0 Magenta  1
+            2 2  0 Green    6 3 -3 Cyan     0
+            3 6  3 Yellow   7 7  0 Gray     1
+        --]]
+
+        -- Convert from cmd.exe colour indices to ANSI ones.
+        local colour_id = c % 8
+        if (colour_id % 2) == 1 then
+            if colour_id < 4 then
+                c = c + 3
+            end
+        elseif colour_id >= 4 then
+            c = c - 3
+        end
+
+        -- Clamp
+        if c > 15 then
+            c = 15
+        end
+
+        -- Build ANSI code
+        local code = "\x1b[0;"
+        if c > 7 then
+            c = c - 8
+            code = code.."1;"
+        end
+        code = code..(c + 30).."m"
+
+        return code..p.."\x1b[0m"
+    end
+
     clink.prompt.value = prompt
 
     for _, filter in ipairs(clink.prompt.filters) do
         if filter.f() == true then
-            return clink.prompt.value
+            return add_ansi_codes(clink.prompt.value)
         end
     end
 
-    return clink.prompt.value
+    return add_ansi_codes(clink.prompt.value)
 end
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- arguments.lua
@@ -214,14 +361,20 @@ local function traverse(generator, parts, text, first, last)
     -- Each part of the command line leading up to 'text' is considered as
     -- a level of the 'generator' tree.
     local part = parts[parts.n]
+    local last_part = (parts.n >= #parts)
     parts.n = parts.n + 1
 
-    -- Functions and booleans are leafs of the tree.
+    -- Non-table types are leafs of the tree.
     local t = type(generator)
     if t == "function" then
         return generator(text, first, last)
     elseif t == "boolean" then
         return generator
+    elseif t == "string" then
+        if last_part then
+            clink.add_match(generator)
+        end
+        return last_part
     elseif t ~= "table" then
         return false
     end
@@ -235,11 +388,11 @@ local function traverse(generator, parts, text, first, last)
     -- Check generator[1] for behaviour flags.
     -- * = If generator is a leave in the tree, repeat it for ever.
     -- + = User must have typed at least one character for matches to be added.
-    local repeat_leaf = false
+    local repeat_node = false
     local allow_empty_text = true
     local node_flags = generator[clink.arg.node_flags_key]
     if node_flags then
-        repeat_leaf = (node_flags:find("*") ~= nil)
+        repeat_node = (node_flags:find("*") ~= nil)
         allow_empty_text = (node_flags:find("+") == nil)
     end
 
@@ -247,18 +400,10 @@ local function traverse(generator, parts, text, first, last)
     if not allow_empty_text and text == "" then
         return false
     end
-    
-    -- We can only proceed further if we're at a leaf.
-    if parts.n <= #parts then
-        return false
-    end
 
+    local full_match = false
+    local matches = {}
     for key, value in pairs(generator) do
-        -- Strings are also leafs.
-        if value == part and not repeat_leaf then
-            return false
-        end
-
         -- So we're in a node but don't have enough info yet to traverse
         -- further down the tree. Attempt to pull out keys or array entries
         -- and add them as matches.
@@ -270,12 +415,25 @@ local function traverse(generator, parts, text, first, last)
         if candidate ~= clink.arg.node_flags_key then
             if type(candidate) == "string" then
                 if clink.is_match(part, candidate) then
-                    clink.add_match(candidate)
+                    full_match = full_match or (#part == #candidate)
+                    table.insert(matches, candidate)
                 end
             end
         end
     end
 
+    -- One full match, we're not at the end, and we should repeat. Down we go...
+    if not last_part then
+        if full_match and repeat_node then
+            return traverse(generator, parts, text, first, last)
+        end
+    else
+        -- Transfer matches to clink.
+        for _, i in ipairs(matches) do
+            clink.add_match(i)
+        end
+    end
+    
     return clink.match_count() > 0
 end
 
@@ -302,14 +460,13 @@ function clink.argument_match_generator(text, first, last)
     end
 
     -- Split the command line into parts.
-    local str = rl_line_buffer:sub(cmd_end, last)
+    local str = rl_line_buffer:sub(cmd_end, last - 1)
     local parts = {}
-    for _, r, part in function () return str:find("^%s*([^%s]+)") end do
-        if part:find("\"") then
-        else
+    for _, sub_str in ipairs(clink.quote_split(str, "\"")) do
+        for _, r, part in function () return sub_str:find("^%s*([^%s]+)") end do
             table.insert(parts, part)
+            sub_str = sub_str:sub(r+1)
         end
-        str = str:sub(r+1)
     end
 
     -- If 'text' is empty then add it as a part as it would have been skipped
@@ -324,6 +481,8 @@ end
 
 --------------------------------------------------------------------------------
 clink.register_match_generator(clink.argument_match_generator, 25)
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- dir.lua
@@ -362,32 +521,11 @@ function dir_match_generator(text, first, last)
 
     local mask = text.."*"
 
-    -- If readline's -/_ mapping is on then adjust mask.
-    if clink.is_rl_variable_true("completion-map-case") then
-        local function mangle_mask(m)
-            return m:gsub("_", "?"):gsub("-", "?")
-        end
-
-        local sep = mask:reverse():find("\\", 2)
-        if sep ~= nil then
-            sep = #mask - sep + 1;
-
-            local mask_left = mask:sub(1, sep)
-            local mask_right = mask:sub(sep + 1)
-
-            mask = mask_left..mangle_mask(mask_right)
-        else
-            mask = mangle_mask(mask)
-        end
-    end
-
     -- Find matches.
-    for _, dir in ipairs(clink.find_dirs(mask)) do
-        if not dir:find("^%.+$") then
-            local file = prefix..dir
-            if clink.is_match(text, file) then
-                clink.add_match(prefix..dir)
-            end
+    for _, dir in ipairs(clink.find_dirs(mask, true)) do
+        local file = prefix..dir
+        if clink.is_match(text, file) then
+            clink.add_match(prefix..dir)
         end
     end
 
@@ -412,6 +550,8 @@ clink.arg.register_tree("rd", dir_match_generator)
 clink.arg.register_tree("rmdir", dir_match_generator)
 clink.arg.register_tree("md", dir_match_generator)
 clink.arg.register_tree("mkdir", dir_match_generator)
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- env.lua
@@ -446,31 +586,68 @@ local special_env_vars = {
 }
 
 --------------------------------------------------------------------------------
+local function env_vars_display_filter(matches)
+    local to_display = {}
+    for _, m in ipairs(matches) do
+        local _, _, out = m:find("(%%[^%%]+%%)$")
+        table.insert(to_display, out)
+    end
+
+    return to_display
+end
+
+--------------------------------------------------------------------------------
+local function env_vars_find_matches(candidates, prefix, part)
+    local part_len = #part
+    for _, name in ipairs(candidates) do
+        if clink.lower(name:sub(1, part_len)) == part then
+            clink.add_match(prefix..'%'..name:lower()..'%')
+        end
+    end
+end
+
+--------------------------------------------------------------------------------
 local function env_vars_match_generator(text, first, last)
-    -- Use this match generator if out text starts with a % or "%
-    if not text:find("^%%") then
+    local all = rl_line_buffer:sub(1, last)
+
+    -- Skip pairs of %s
+    local i = 1
+    for _, r in function () return all:find("%b%%", i) end do
+        i = r + 2
+    end
+
+    -- Find a solitary %
+    local i = all:find("%%", i)
+    if not i then
         return false
     end
-    
-    text = clink.lower(text:sub(2))
-    local text_len = #text
-    for _, name in ipairs(clink.get_env_var_names()) do
-        if clink.lower(name:sub(1, text_len)) == text then
-            clink.add_match('%'..name..'%')
-        end
+
+    if i < first then
+        return false
     end
 
-    for _, name in ipairs(special_env_vars) do
-        if clink.lower(name:sub(1, text_len)) == text then
-            clink.add_match('%'..name..'%')
-        end
+    local part = clink.lower(all:sub(i + 1))
+    local part_len = #part
+
+    i = i - first
+    local prefix = text:sub(1, i)
+
+    env_vars_find_matches(clink.get_env_var_names(), prefix, part)
+    env_vars_find_matches(special_env_vars, prefix, part)
+
+    if clink.match_count() >= 1 then
+        clink.match_display_filter = env_vars_display_filter
+        clink.suppress_char_append()
+        return true
     end
 
-    return true
+    return false
 end
 
 --------------------------------------------------------------------------------
 clink.register_match_generator(env_vars_match_generator, 10)
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- exec.lua
@@ -499,6 +676,7 @@ clink.register_match_generator(env_vars_match_generator, 10)
 --
 
 --------------------------------------------------------------------------------
+local match_style = 0
 local dos_commands = {
     "assoc", "break", "call", "cd", "chcp", "chdir", "cls", "color", "copy",
     "date", "del", "dir", "diskcomp", "diskcopy", "echo", "endlocal", "erase",
@@ -507,19 +685,6 @@ local dos_commands = {
     "rem", "ren", "rename", "rmdir", "set", "setlocal", "shift", "start",
     "time", "title", "tree", "type", "ver", "verify", "vol"
 }
-
---------------------------------------------------------------------------------
-local function split_on_semicolon(str)
-    local i = 0
-    local ret = {}
-    for _, j in function() return str:find(";", i, true) end do
-        table.insert(ret, str:sub(i, j - 1))
-        i = j + 1
-    end
-    table.insert(ret, str:sub(i, j))
-
-    return ret
-end
 
 --------------------------------------------------------------------------------
 local function dos_cmd_match_generator(text, first, last)
@@ -531,13 +696,19 @@ local function dos_cmd_match_generator(text, first, last)
 end
 
 --------------------------------------------------------------------------------
+local function dos_and_dir_match_generators(text, first, last)
+    dos_cmd_match_generator(text, first, last)
+    dir_match_generator(text, first, last)
+end
+
+--------------------------------------------------------------------------------
 local function build_passes(text)
     local passes = {}
 
     -- If there's no path separator in text then consider the environment's path
     -- as a first pass for matches.
     if not text:find("[\\/:]") then
-        local paths = split_on_semicolon(clink.get_env("PATH"))
+        local paths = clink.split(clink.get_env("PATH"), ";")
 
         table.insert(paths, ".\\")
 
@@ -558,7 +729,18 @@ local function build_passes(text)
             table.insert(paths, paths_merged[i].."\\")
         end
 
-        table.insert(passes, { paths=paths })
+        -- Depending on match style add empty path so 'text' is used.
+        if match_style > 0 then
+            table.insert(paths, "")
+        end
+
+        -- Should directories be considered too?
+        local extra_func = dos_cmd_match_generator
+        if match_style > 1 then
+            extra_func = dos_and_dir_match_generators
+        end
+
+        table.insert(passes, { paths=paths, func=extra_func })
     end
 
     -- The fallback solution is to use 'text' to find matches, and also add
@@ -586,12 +768,6 @@ local function exec_match_generator(text, first, last)
         needle = needle:sub(1, ext_a - 1)
     end
 
-    -- Replace '_' or '-' with '*' for improved "case insentitive" searching.
-    if clink.is_rl_variable_true("completion-map-case") then
-        needle = needle:gsub("-", "?")
-        needle = needle:gsub("_", "?")
-    end
-
     -- Strip off any path components that may be on text
     local prefix = ""
     local i = text:find("[\\/:][^\\/:]*$")
@@ -599,19 +775,20 @@ local function exec_match_generator(text, first, last)
         prefix = text:sub(1, i)
     end
 
+    match_style = clink.get_setting_int("exec_match_style")
     local passes = build_passes(text)
 
     -- Combine extensions, text, and paths to find matches - this is done in two
     -- passes, the second pass possibly being "local" if the system-wide search
     -- didn't find any results.
     local n = #passes
-    local exts = split_on_semicolon(clink.get_env("PATHEXT"))
+    local exts = clink.split(clink.get_env("PATHEXT"), ";")
     for p = 1, n do
         local pass = passes[p]
         for _, ext in ipairs(exts) do
             for _, path in ipairs(pass.paths) do
                 local mask = path..needle.."*"..ext
-                for _, file in ipairs(clink.find_files(mask)) do
+                for _, file in ipairs(clink.find_files(mask, true)) do
                     file = prefix..file
                     if clink.is_match(text, file) then
                         clink.add_match(file)
@@ -635,6 +812,8 @@ end
 
 --------------------------------------------------------------------------------
 clink.register_match_generator(exec_match_generator, 50)
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- git.lua
@@ -679,6 +858,8 @@ local git_argument_tree = {
 
 clink.arg.register_tree("git", git_argument_tree)
 
+-- vim: expandtab
+
 --------------------------------------------------------------------------------
 -- hg.lua
 --
@@ -713,10 +894,13 @@ local hg_tree = {
     "incoming", "init", "locate", "log", "manifest", "merge", "outgoing",
     "parents", "paths", "pull", "push", "recover", "remove", "rename", "resolve",
     "revert", "rollback", "root", "serve", "showconfig", "status", "summary",
-    "tag", "tags", "tip", "unbundle", "update", "verify", "version"
+    "tag", "tags", "tip", "unbundle", "update", "verify", "version", "graft",
+    "phases"
 }
 
 clink.arg.register_tree("hg", hg_tree)
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- p4.lua
@@ -762,6 +946,8 @@ local p4_tree = {
 
 clink.arg.register_tree("p4", p4_tree)
 
+-- vim: expandtab
+
 --------------------------------------------------------------------------------
 -- self.lua
 --
@@ -800,6 +986,8 @@ local self_tree = clink.arg.tree_node("*", {
 })
 
 clink.arg.register_tree("clink", self_tree)
+
+-- vim: expandtab
 
 --------------------------------------------------------------------------------
 -- set.lua
@@ -854,6 +1042,8 @@ end
 --------------------------------------------------------------------------------
 clink.arg.register_tree("set", set_match_generator)
 
+-- vim: expandtab
+
 --------------------------------------------------------------------------------
 -- svn.lua
 --
@@ -894,4 +1084,4 @@ local svn_tree = {
 
 clink.arg.register_tree("svn", svn_tree)
 
-dofile(os.getenv("CMDRC_PATH") .. "clink_prompt.lua")
+-- vim: expandtab

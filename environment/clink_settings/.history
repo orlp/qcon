@@ -1,0 +1,22 @@
+prompt
+prompt $E
+test
+prompt $E[32m
+a
+prompt $E[32mtest
+setup_environment.bat 
+fs
+setup_environment.bat 
+prompt
+fsfjk
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cls
+FFFFFFFFFFFI
+LS
+ls
+cd environment\
+ls
+cd clink
+cd ..
+env
+set

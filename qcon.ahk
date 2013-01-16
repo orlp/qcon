@@ -87,37 +87,7 @@ Alt & RButton::
 }
 
 #IfWinActive quake_style_console
-Alt & LButton::
-{
-  MouseGetPos, , , windowUnderCursor
-
-  WinSet Top, , ahk_id %windowUnderCursor%
-  WinGet isMaximised, MinMax, ahk_id %windowUnderCursor%
-  if isMaximised
-    WinRestore ahk_id %windowUnderCursor%
-
-  MouseGetPos mouseX, mouseY
-
-  loop {
-    GetKeyState buttonstate, LButton, P
-    if buttonstate = U
-      break
-
-    MouseGetPos newMouseX, newMouseY
-    WinGetPos windowX, windowY, , , ahk_id %windowUnderCursor%
-    WinMove ahk_id %windowUnderCursor%,
-      , windowX + (newMouseX - mouseX)
-      , windowY + (newMouseY - mouseY)
-
-    mouseX := newMouseX
-    mouseY := newMouseY
-  }
-
-  return
-}
-
-#IfWinActive quake_style_console
-^+backspace::
+F11::
 {
     WinGetPos,,, Width, height
     
