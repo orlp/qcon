@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <settings>
-	<console change_refresh="10" refresh="100" rows="28" columns="95" buffer_rows="5000" buffer_columns="0" shell="" init_dir="" start_hidden="0" save_size="1">
+	<console change_refresh="10" refresh="100" rows="24" columns="150" buffer_rows="5000" buffer_columns="0" shell="" init_dir="" start_hidden="0" save_size="1">
 		<colors>
 			<color id="0" r="0" g="0" b="0"/>
 			<color id="1" r="0" g="0" b="128"/>
@@ -29,7 +29,7 @@
 		<styles caption="0" resizable="0" taskbar_button="0" border="0" inside_border="9" tray_icon="0">
 			<selection_color r="255" g="255" b="255"/>
 		</styles>
-		<position x="354" y="90" dock="-1" snap="0" z_order="1" save_position="1"/>
+		<position x="140" y="0" dock="-1" snap="0" z_order="1" save_position="1"/>
 		<transparency type="1" active_alpha="215" inactive_alpha="215" r="0" g="0" b="0"/>
 	</appearance>
 	<behavior>
