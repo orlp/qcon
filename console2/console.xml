@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <settings>
-	<console change_refresh="10" refresh="100" rows="28" columns="79" buffer_rows="5000" buffer_columns="0" shell="" init_dir="" start_hidden="0" save_size="1">
+	<console change_refresh="10" refresh="100" rows="24" columns="150" buffer_rows="5000" buffer_columns="0" shell="" init_dir="" start_hidden="0" save_size="1">
 		<colors>
 			<color id="0" r="0" g="0" b="0"/>
 			<color id="1" r="0" g="0" b="128"/>
@@ -29,7 +29,7 @@
 		<styles caption="0" resizable="0" taskbar_button="0" border="0" inside_border="9" tray_icon="0">
 			<selection_color r="255" g="255" b="255"/>
 		</styles>
-		<position x="468" y="114" dock="-1" snap="0" z_order="1" save_position="1"/>
+		<position x="277" y="159" dock="-1" snap="0" z_order="1" save_position="1"/>
 		<transparency type="1" active_alpha="215" inactive_alpha="215" r="0" g="0" b="0"/>
 	</appearance>
 	<behavior>
@@ -91,7 +91,7 @@
 	</mouse>
 	<tabs>
 		<tab title="cmd1" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 1" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=1&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -100,7 +100,7 @@
 			</background>
 		</tab>
 		<tab title="cmd2" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 2" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=2&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -109,7 +109,7 @@
 			</background>
 		</tab>
 		<tab title="cmd3" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 3" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=3&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -118,7 +118,7 @@
 			</background>
 		</tab>
 		<tab title="cmd4" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 4" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=4&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -127,7 +127,7 @@
 			</background>
 		</tab>
 		<tab title="cmd5" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 5" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=5&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -136,7 +136,7 @@
 			</background>
 		</tab>
 		<tab title="cmd6" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 6" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=6&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -145,7 +145,7 @@
 			</background>
 		</tab>
 		<tab title="cmd7" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 7" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=7&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -154,7 +154,7 @@
 			</background>
 		</tab>
 		<tab title="cmd8" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 8" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=8&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
@@ -163,7 +163,7 @@
 			</background>
 		</tab>
 		<tab title="cmd9" use_default_icon="0">
-			<console shell="cmd /k environment\setup_environment.bat 9" init_dir="" run_as_user="0" user=""/>
+			<console shell="cmd /k &quot;set CONSOLE_NR=9&quot;" init_dir="" run_as_user="0" user=""/>
 			<cursor style="0" r="255" g="255" b="255"/>
 			<background type="0" r="0" g="0" b="0">
 				<image file="" relative="0" extend="0" position="0">
