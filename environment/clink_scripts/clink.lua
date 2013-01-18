@@ -710,8 +710,6 @@ local function build_passes(text)
     if not text:find("[\\/:]") then
         local paths = clink.split(clink.get_env("PATH"), ";")
 
-        table.insert(paths, ".\\")
-
         -- We're expecting absolute paths and as ';' is a valid path character
         -- there maybe unneccessary splits. Here we resolve them.
         local paths_merged = { paths[1] }

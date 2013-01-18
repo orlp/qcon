@@ -45,7 +45,7 @@ set CONSOLE_NR=%1
 
 REM run clink (this HAS to be the last command, that's why we already put echo to on)
 echo on
-@%~dp0clink\clink.bat inject --quiet --profile %~dp0clink_settings --scripts %~dp0clink_scripts
+@%~dp0clink\clink.bat inject --quiet --profile %~dp0clink_profile --scripts %~dp0clink_scripts
 
 
 :exit
