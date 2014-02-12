@@ -15,8 +15,8 @@ echo on
 @exit
 
 :administrator
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run" /v qcon /t REG_EXPAND_SZ /d "%~dp0qcon.exe" /f
-start %~dp0qcon.exe
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run" /v qcon /t REG_EXPAND_SZ /d "\"%~dp0qcon.exe\"" /f
+start "%~dp0qcon.exe"
 
 pause
 echo on
